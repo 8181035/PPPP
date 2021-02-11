@@ -1,0 +1,350 @@
+#include <iostream>
+#include <cstdlib>
+#include <ctime>
+using namespace std;
+
+int enter_int() //функция ввода положительного числа
+{
+	int n;
+	do
+	{
+		cin >> n;
+		if (n <= 0) cout << "Введите число большее 0!\n";
+	} while (n <= 0);
+	return n;
+}
+
+int** inizialization_matrix(int n, int m) //функция инициализации матрицы и заполнения ее нулями
+{
+	int** M = new int* [n];
+	for (int i = 0; i < n; i++)
+	{
+		M[i] = new int[m];
+		for (int j = 0; j < m; j++)
+			M[i][j] = 0;
+	}
+	return M;
+}
+
+int** enter_matrix(int n, int m) //функция ручного ввода значений матрицы
+{
+	cout << "\n";
+	cout << "Введите значения матрицы\n";
+	int** M = inizialization_matrix(n, m);
+	for (int i = 0; i < n; i++)
+		for (int j = 0; j < m; j++)
+			cin >> M[i][j];
+	return M;
+}
+
+void print_matrix(int** M, int n, int m) //функция печати матрицы
+{
+	int a;
+	for (int i = 0; i < n; i++)
+	{
+		for (int j = 0; j < m; j++)
+			cout << M[i][j] << " ";
+		cout << endl;
+	}
+}
+
+int** random_matrix(int n, int m) //функция заполнения матрицы случайным образом
+{
+	int** M = inizialization_matrix(n, m);
+	for (int i = 0; i < n; i++)
+		for (int j = 0; j < m; j++)
+			M[i][j] = rand() % 10;
+	return M;
+}
+
+void print_all(int** M1, int n1, int m1, int** M2, int n2, int m2) //функция печати обеих матриц
+{
+	cout << "\nМатрица 1\n\n";
+	print_matrix(M1, n1, m1);
+	cout << "\nМатрица 2\n\n";
+	print_matrix(M2, n2, m2);
+}
+
+int** create_auxiliary_matrix(int** M, int l, int a, int b) //создание вспомогательной матрицы (a и b - смещение внутри матрицы)
+{
+	int** mat = new int* [l / 2];
+	for (int i = 0; i < l / 2; i++)
+	{
+		mat[i] = new int[l / 2];
+		for (int j = 0; j < l / 2; j++)
+			mat[i][j] = M[i + a][j + b];
+	}
+	return mat;
+}
+
+int alignment_matrix(int** M, int l) //функция выравнивания результирующей матрицы
+{
+	int x = 0, f = 100;
+	for (int i = 0; i < l; i++)
+	{
+		x = 0;
+		for (int j = 0; j < l; j++)
+		{
+			if (M[i][j] != 0)
+			{
+				x++;
+				f = 100;
+			}
+		}
+		if (x == 0 && i < f)
+		{
+			f = i;
+		}
+	}
+	return f;
+}
+
+void delete_matrix(int** M, int n) //функция удаления матрицы из динамической памяти
+{
+	for (int i = 0; i < n; i++)
+		delete[] M[i];
+	delete[] M;
+}
+
+/**************************************************************************************************************************************/
+int main()
+{
+	srand(time(NULL));
+	int n1, m1, n2, m2, k, l = 2;
+
+	system("chcp 1251");
+	cout << "Вас приветствует программа" << endl <<
+		"быстрого перемножения матриц методом Штрассена\n\n";
+
+
+	////////////////////Ввод размеров матрицы пользователем////////////////////////
+
+	cout << "Введите размеры первой матрицы\n";
+	cout << "Введите количество строк\n";
+	n1 = enter_int();
+	cout << "Введите количество столбцов\n";
+	m1 = enter_int();
+	cout << " \n";
+
+	cout << "Введите размеры второй матрицы\n";
+	cout << "Введите количество строк\n";
+	n2 = enter_int();
+	cout << "Введите количество столбцов\n";
+	m2 = enter_int();
+	cout << " \n";
+
+	int** M1 = inizialization_matrix(n1, m1);
+	int** M2 = inizialization_matrix(n2, m2);
+	cout << "********************************************\n";
+
+
+	////////////////Выбор способа заполнения и заполнение матриц///////////////////
+
+	do
+	{
+		cout << "Выберите способ заполнения матриц\n" <<
+			"1 - Вручную \n2 - Случайным образом\n";
+		cin >> k;
+	} while (k < 1 || k > 2);
+	switch (k)
+	{
+	case 1:
+		M1 = enter_matrix(n1, m1);
+		M2 = enter_matrix(n2, m2);
+		print_all(M1, n1, m1, M2, n2, m2);
+		break;
+
+	case 2:
+		M1 = random_matrix(n1, m1);
+		M2 = random_matrix(n2, m2);
+		print_all(M1, n1, m1, M2, n2, m2);
+		break;
+	}
+	cout << "********************************************\n";
+
+
+	/////////////////Приведение матриц к требуемому размеру////////////////////////
+
+	while (l < n1 || l < n2 || l < m1 || l < m2)
+		l *= 2;
+	int** M3 = inizialization_matrix(l, l);
+	int** M4 = inizialization_matrix(l, l);
+
+	for (int i = 0; i < n1; i++)
+	{
+		for (int j = 0; j < m1; j++)
+			M3[i][j] = M1[i][j];
+	}
+	for (int i = 0; i < n2; i++)
+	{
+		for (int j = 0; j < m2; j++)
+			M4[i][j] = M2[i][j];
+	}
+	cout << "Приведенные матрицы\n";
+	print_all(M3, l, l, M4, l, l);
+	cout << "********************************************\n";
+
+	///////////////Разбиение матриц на подматрицы и их заполнение//////////////////
+
+	int** mat1 = create_auxiliary_matrix(M3, l, 0, 0);
+	int** mat2 = create_auxiliary_matrix(M3, l, 0, l / 2);
+	int** mat3 = create_auxiliary_matrix(M3, l, l / 2, 0);
+	int** mat4 = create_auxiliary_matrix(M3, l, l / 2, l / 2);
+	int** mat5 = create_auxiliary_matrix(M4, l, 0, 0);
+	int** mat6 = create_auxiliary_matrix(M4, l, 0, l / 2);
+	int** mat7 = create_auxiliary_matrix(M4, l, l / 2, 0);
+	int** mat8 = create_auxiliary_matrix(M4, l, l / 2, l / 2);
+
+	////////////////////////Создание промежуточных матриц//////////////////////////
+
+	int** p1 = inizialization_matrix(l / 2, l / 2);
+	int** p2 = inizialization_matrix(l / 2, l / 2);
+	int** p3 = inizialization_matrix(l / 2, l / 2);
+	int** p4 = inizialization_matrix(l / 2, l / 2);
+	int** p5 = inizialization_matrix(l / 2, l / 2);
+	int** p6 = inizialization_matrix(l / 2, l / 2);
+	int** p7 = inizialization_matrix(l / 2, l / 2);
+
+	////////////////////Вычисление значений промежуточных матриц///////////////////
+
+	for (int i = 0; i < l / 2; i++)
+	{
+		for (int j = 0; j < l / 2; j++)
+		{
+			p1[i][j] = 0;
+			for (int z = 0; z < l / 2; z++)
+			{
+				p1[i][j] += (mat1[i][z] + mat4[i][z]) * (mat5[z][j] + mat8[z][j]);
+			}
+
+			p2[i][j] = 0;
+			for (int z = 0; z < l / 2; z++)
+			{
+				p2[i][j] += (mat3[i][z] + mat4[i][z]) * mat5[z][j];
+			}
+
+			p3[i][j] = 0;
+			for (int z = 0; z < l / 2; z++)
+			{
+				p3[i][j] += mat1[i][z] * (mat6[z][j] - mat8[z][j]);
+			}
+
+			p4[i][j] = 0;
+			for (int z = 0; z < l / 2; z++)
+			{
+				p4[i][j] += mat4[i][z] * (mat7[z][j] - mat5[z][j]);
+			}
+
+			p5[i][j] = 0;
+			for (int z = 0; z < l / 2; z++)
+			{
+				p5[i][j] += (mat1[i][z] + mat2[i][z]) * mat8[z][j];
+			}
+
+			p6[i][j] = 0;
+			for (int z = 0; z < l / 2; z++)
+			{
+				p6[i][j] += (mat3[i][z] - mat1[i][z]) * (mat5[z][j] + mat6[z][j]);
+			}
+
+			p7[i][j] = 0;
+			for (int z = 0; z < l / 2; z++)
+			{
+				p7[i][j] += (mat2[i][z] - mat4[i][z]) * (mat7[z][j] + mat8[z][j]);
+			}
+		}
+	}
+
+	///////////////////////Создание вспомогательных матриц/////////////////////////
+
+	int** mat9 = inizialization_matrix(l / 2, l / 2);
+	int** mat10 = inizialization_matrix(l / 2, l / 2);
+	int** mat11 = inizialization_matrix(l / 2, l / 2);
+	int** mat12 = inizialization_matrix(l / 2, l / 2);
+
+	////////////Подсчет значений вспомогательных матриц из промежуточных///////////
+
+	for (int i = 0; i < l / 2; i++)
+	{
+		for (int j = 0; j < l / 2; j++)
+		{
+			mat9[i][j] = p1[i][j] + p4[i][j] - p5[i][j] + p7[i][j];
+			mat10[i][j] = p3[i][j] + p5[i][j];
+			mat11[i][j] = p2[i][j] + p4[i][j];
+			mat12[i][j] = p1[i][j] - p2[i][j] + p3[i][j] + p6[i][j];
+		}
+	}
+
+	////////Создание результирующей матрицы и занесение в нее результата///////////
+
+	int** M5 = inizialization_matrix(l, l);
+	for (int i = 0; i < l / 2; i++)
+	{
+		for (int j = 0; j < l / 2; j++)
+		{
+			M5[i][j] = mat9[i][j];
+			M5[i][j + l / 2] = mat10[i][j];
+			M5[i + l / 2][j] = mat11[i][j];
+			M5[i + l / 2][j + l / 2] = mat12[i][j];
+		}
+	}
+
+	////////////////Выравнивание границ результирующей матрицы/////////////////////
+
+	int x = 0, f = 100, s = 100;
+	int** mat0 = inizialization_matrix(l, l); 
+	f = alignment_matrix(M5, l);
+
+	for (int i = 0; i < l; i++)
+	{
+		for (int j = 0; j < l; j++)
+		{
+			mat0[i][j] = M5[j][i];
+		}
+	}
+	s = alignment_matrix(mat0, l);
+
+
+	int** M6 = inizialization_matrix(f,s);
+	for (int i = 0; i < f; i++)
+	{
+		for (int j = 0; j < s; j++)
+			M6[i][j] = mat0[j][i];
+	}
+
+	///////////////////Вывод результирующей матрицы////////////////////////////////
+
+	cout << "\nРезультирующая матрица\n\n";
+	print_matrix(M6, f, s);
+	cout << "\n";
+	system("pause");
+
+	/////////////////////Очистка динамической памяти///////////////////////////////
+
+	delete_matrix(M1, n1);
+	delete_matrix(M2, n2);
+	delete_matrix(M3, l);
+	delete_matrix(M4, l);
+	delete_matrix(M5, l);
+	delete_matrix(M6, f);
+	delete_matrix(mat1, l/2);
+	delete_matrix(mat2, l / 2);
+	delete_matrix(mat3, l / 2);
+	delete_matrix(mat5, l / 2);
+	delete_matrix(mat6, l / 2);
+	delete_matrix(mat7, l / 2);
+	delete_matrix(mat8, l / 2);
+	delete_matrix(mat9, l / 2);
+	delete_matrix(mat10, l / 2);
+	delete_matrix(mat11, l / 2);
+	delete_matrix(mat12, l / 2);
+	delete_matrix(p1, l / 2);
+	delete_matrix(p2, l / 2);
+	delete_matrix(p3, l / 2);
+	delete_matrix(p4, l / 2);
+	delete_matrix(p6, l / 2);
+	delete_matrix(p7, l / 2);
+	delete_matrix(mat0, s);
+
+	return 0;
+}
